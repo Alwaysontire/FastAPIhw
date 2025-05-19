@@ -22,8 +22,8 @@ def create(task: schemas.TaskCreate, db: Session = Depends(get_db)):
 
 @router.get("/", response_model=List[schemas.TaskOut])
 def read_all(
-    sort_by: str = Query("creation_date", regex="^(title|status|creation_date)$"),
-    order: str   = Query("asc", regex="^(asc|desc)$"),
+    sort_by: str = Query("creation_date", pattern="^(title|status|creation_date|priority)$"), 
+    order: str   = Query("asc", pattern="^(asc|desc)$"), 
     q: Optional[str] = None,
     db: Session = Depends(get_db)
 ):

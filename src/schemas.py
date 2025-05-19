@@ -1,12 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
 
 class TaskBase(BaseModel):
     title : str
-    descripton : str
+    description : str
     status : str
-    property : Optional[int] = 0
+    priority : Optional[int] = 0
 
 class TaskCreate(TaskBase):
     pass
@@ -20,6 +20,5 @@ class TaskUpdate(BaseModel):
 class TaskOut(TaskBase):
     id : int
     creation_date : datetime
-
-    class Config:
-        orm_model = True
+    
+    model_config = ConfigDict(from_attributes=True)

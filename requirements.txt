@@ -4,3 +4,7 @@ typing
 datetime
 sqlalchemy
 contextlib
+pytest
+httpx
+python-multipart
+uvicorn

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from . import models, schemas
-from datetime import datetime
+from datetime import datetime, UTC
 
 def create_task(db : Session, task : schemas.TaskCreate):
     db_task = models.Task(
@@ -8,11 +8,11 @@ def create_task(db : Session, task : schemas.TaskCreate):
         description = task.description,
         status = task.status,
         priority = task.priority,
-        creation_date = datetime.utcnow()
+        creation_date = datetime.now(UTC)
     )
-    db.add(db.task)
+    db.add(db_task)
     db.commit()
-    db.refresh(db.task)
+    db.refresh(db_task)
     return db_task
 
 def get_task(db : Session, task_id : int):
@@ -24,13 +24,25 @@ def get_tasks(db : Session, *, sort_by, order, q = None):
         query = query.filter(
             models.Task.title.ilike(f"%{q}%") | models.Task.description.ilike(f"%{q}%")
         )
-    col = {"title" : models.Task.title, "status" : models.Task.status, "creation_date" : models.Task.creation_date}[sort_by]
-    if order == "desc":
-        col = col.desc()
-        return query.order_by(col).all()
+    
+    sort_attributes = {
+        "title": models.Task.title,
+        "status": models.Task.status,
+        "creation_date": models.Task.creation_date,
+        "priority": models.Task.priority 
+    }
+
+    if sort_by in sort_attributes:
+        attr = sort_attributes[sort_by]
+        if order.lower() == "desc":
+            query = query.order_by(attr.desc())
+        else:
+            query = query.order_by(attr.asc())
+            
+    return query.all()
     
 def update_task(db : Session, db_task : models.Task, updates : schemas.TaskUpdate):
-    for field, value in updates.dict(exclude_unset=True).items():
+    for field, value in updates.model_dump(exclude_unset=True).items():
         setattr(db_task, field, value)
     db.commit()
     db.refresh(db_task)
